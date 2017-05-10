@@ -21,13 +21,26 @@ class Call
 
     /**
      * Call constructor.
-     * @param Promise   $promise
+     * @param Promise $promise
      * @param $deserialize
      */
     public function __construct($promise, $deserialize)
     {
         $this->promise = $promise;
         $this->deserialize = $deserialize;
+    }
+
+    protected function _serializeMessage($data)
+    {
+        // Proto3 implementation
+        if (method_exists($data, 'encode')) {
+            return $data->encode();
+        } elseif (method_exists($data, 'serializeToString')) {
+            return $data->serializeToString();
+        }
+
+        // Protobuf-PHP implementation
+        return $data->serialize();
     }
 
     protected function _deserializeResponse($value)
@@ -45,11 +58,10 @@ class Call
             } else {
                 $obj->mergeFromString($value);
             }
-
             return $obj;
         }
 
         // Protobuf-PHP implementation
-        return call_user_func($this->deserialize, $value);
+            return call_user_func($this->deserialize, $value);
     }
 }

@@ -8,14 +8,12 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$client = new \Etcdserverpb\KVClient('172.20.111.172:2379', [
-    'credentials' => Grpc\ChannelCredentials::createInsecure(),
+$serv = new swoole_http_server("127.0.0.1", 9501, SWOOLE_PROCESS, SWOOLE_SOCK_TCP);
+$serv->set([
+    'open_http2_protocol' => true,
 ]);
-
-$request = new \Etcdserverpb\RangeRequest();
-$request->setKey("Hello");
-list($reply, $status) = $client->Range($request)->wait();
-if ($reply instanceof \Etcdserverpb\RangeResponse)
-{
-    var_dump($reply->getCount());
-}
+$serv->on('request', function (swoole_http_request $request, swoole_http_response $response) {
+    var_dump($request);
+    $response->end("<h1>Hello Swoole. #".rand(1000, 9999)."</h1>");
+});
+$serv->start();

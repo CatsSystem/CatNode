@@ -13,27 +13,65 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 
 \core\concurrent\Promise::co(function(){
-    $client = new KVClient('172.20.111.172:2379', []);
-    yield $client->init();
-//    $request = new RangeRequest();
-//    $request->setKey(0);
-//    $request->setRangeEnd(0);
-//    list($reply, $status) = yield $client->Range($request)->wait();
-//    var_dump($status);
-//    if($reply instanceof \Etcdserverpb\RangeResponse)
-//    {
-//        $message = $reply->getKvs();
-//        var_dump($reply->getCount());
-//        var_dump($message);
-//    }
-
-    $request = new \Etcdserverpb\RangeRequest();
-    $request->setKey("Hello");
+    $client = new KVClient('127.0.0.1:2379', []);
+    $request = new RangeRequest();
+    $request->setKey(0);
+    $request->setRangeEnd(0);
     list($reply, $status) = yield $client->Range($request)->wait();
-    if ($reply instanceof \Etcdserverpb\RangeResponse)
+    if($reply instanceof \Etcdserverpb\RangeResponse)
     {
+        $message = $reply->getKvs();
         var_dump($reply->getCount());
-        $result = $reply->getKvs();
-        var_dump($result->offsetGet(0)->getValue());
+        var_dump($message);
     }
+    var_dump("+++++++++++");
+
+    $client = new KVClient('127.0.0.1:2379', []);
+    $request = new RangeRequest();
+    $request->setKey(0);
+    $request->setRangeEnd(0);
+    list($reply, $status) = yield $client->Range($request)->wait();
+    if($reply instanceof \Etcdserverpb\RangeResponse)
+    {
+        $message = $reply->getKvs();
+        var_dump($reply->getCount());
+        var_dump($message);
+    }
+    var_dump("+++++++++++");
+
+    //$watch_client = new \node\etcd\WatchClient('127.0.0.1:2379', []);
+//    $watch_client = new \node\etcd\WatchClient('172.20.111.172:2379', []);
+//    $call = $watch_client->Watch();
+//
+//    $request = new \Etcdserverpb\WatchRequest();
+//    $create = new \Etcdserverpb\WatchCreateRequest();
+//    $create->setKey("Hello");
+//    $request->setCreateRequest($create);
+//    $call->setCallback(function(\Etcdserverpb\WatchResponse $response, $status){
+//        var_dump($response->getWatchId());
+//        foreach ($response->getEvents() as $event)
+//        {
+//            $type = $event->getType();
+//            var_dump($type);
+//            switch($type)
+//            {
+//                case 0:
+//                {
+//                    $kv = $event->getKv();
+//                    var_dump($kv->getValue());
+//                    break;
+//                }
+//                case 1:
+//                {
+//                    var_dump("delete");
+//                    break;
+//                }
+//                default:
+//                {
+//                    var_dump($response->getEvents());
+//                }
+//            }
+//        }
+//    });
+//    $call->write($request);
 });

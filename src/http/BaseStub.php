@@ -8,10 +8,10 @@
 
 namespace node\http;
 
-use core\component\client\Http2;
-
 class BaseStub
 {
+
+    private $hostname;
     private $host;
     private $port;
 
@@ -19,16 +19,12 @@ class BaseStub
 
     public function __construct($hostname, $opts, $channel = null)
     {
+        $this->hostname = $hostname;
         $hostname = explode(":", $hostname);
         $this->host = $hostname[0];
         $this->port = $hostname[1];
 
         $this->client = new Http2($this->host, false, $this->port);
-    }
-
-    public function init()
-    {
-        return $this->client->init();
     }
 
     /**
@@ -76,22 +72,21 @@ class BaseStub
                                             array $metadata = [],
                                             array $options = [])
     {
-        $msg = $argument->encode();
+        $msg = $argument->serializeToString();
         $data = pack('CN', 0, strlen($msg)) . $msg;
         $promise = $this->client->post($method, $data);
-        $call = new ServerStreamingCall($promise, $deserialize);
+        $call = new UnaryCall($promise, $deserialize);
         return $call;
     }
 
     /**
      * Call a remote method with messages streaming in both directions.
      *
-     * @param string   $method      The name of the method to call
+     * @param string $method The name of the method to call
      * @param callable $deserialize A function that deserializes the responses
-     * @param array    $metadata    A metadata map to send to the server
+     * @param array $metadata A metadata map to send to the server
      *                              (optional)
-     * @param array    $options     An array of options (optional)
-     *
+     * @param array $options An array of options (optional)
      * @return BidiStreamingCall The active call object
      */
     protected function _bidiRequest($method,
@@ -99,10 +94,9 @@ class BaseStub
                                     array $metadata = [],
                                     array $options = [])
     {
-        //$msg = $argument->encode();
-        $data = pack('CN', 0, strlen($msg)) . $msg;
-        $promise = $this->client->post($method, $data);
-        $call = new BidiStreamingCall($promise, $deserialize);
+        $call = new BidiStreamingCall($this->client, $deserialize);
+        $stream_id = $this->client->openStream($method, [$call, "onReceive"]);
+        $call->setStreamId($stream_id);
         return $call;
     }
 }
