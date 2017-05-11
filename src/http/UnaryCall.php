@@ -16,12 +16,6 @@ class UnaryCall extends Call
     public function wait()
     {
         return $this->promise->then(function($result){
-            var_dump(get_class($result));
-            if($result instanceof \swoole_http2_response)
-            {
-                var_dump($result->body);
-                return [$this->_deserializeResponse(substr($result->body, 5)), 200];
-            }
             if($result['code'] != Error::SUCCESS)
             {
                 return null;
