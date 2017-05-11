@@ -115,7 +115,9 @@ class Http2
         });
 
         $this->http_client->post($path, $data, function($cli) use($promise,$timeId){
+            var_dump("test");
             \swoole_timer_clear($timeId);
+            var_dump($cli);
             $promise->resolve([
                 'code'      => Error::SUCCESS,
                 'data'      => $cli->body,

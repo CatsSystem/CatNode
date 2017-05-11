@@ -15,32 +15,36 @@ require_once __DIR__ . '/../vendor/autoload.php';
 \core\concurrent\Promise::co(function(){
     $client = new KVClient('127.0.0.1:2379', []);
     $request = new RangeRequest();
-    $request->setKey(0);
-    $request->setRangeEnd(0);
+    $request->setKey("Hello");
     list($reply, $status) = yield $client->Range($request)->wait();
     if($reply instanceof \Etcdserverpb\RangeResponse)
     {
-        $message = $reply->getKvs();
+        $list = $reply->getKvs();
         var_dump($reply->getCount());
-        var_dump($message);
+        foreach ($list as $item)
+        {
+            var_dump($item->getValue());
+        }
     }
     var_dump("+++++++++++");
 
-    $client = new KVClient('127.0.0.1:2379', []);
+    //$client = new KVClient('127.0.0.1:2379', []);
     $request = new RangeRequest();
-    $request->setKey(0);
-    $request->setRangeEnd(0);
+    $request->setKey("Hello");
     list($reply, $status) = yield $client->Range($request)->wait();
     if($reply instanceof \Etcdserverpb\RangeResponse)
     {
-        $message = $reply->getKvs();
+        $list = $reply->getKvs();
         var_dump($reply->getCount());
-        var_dump($message);
+        foreach ($list as $item)
+        {
+            var_dump($item->getValue());
+        }
     }
-    var_dump("+++++++++++");
 
-    //$watch_client = new \node\etcd\WatchClient('127.0.0.1:2379', []);
-//    $watch_client = new \node\etcd\WatchClient('172.20.111.172:2379', []);
+
+//    $watch_client = new \node\etcd\WatchClient('127.0.0.1:2379', []);
+//    //$watch_client = new \node\etcd\WatchClient('172.20.111.172:2379', []);
 //    $call = $watch_client->Watch();
 //
 //    $request = new \Etcdserverpb\WatchRequest();
@@ -49,6 +53,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 //    $request->setCreateRequest($create);
 //    $call->setCallback(function(\Etcdserverpb\WatchResponse $response, $status){
 //        var_dump($response->getWatchId());
+//        var_dump($response->getCreated());
 //        foreach ($response->getEvents() as $event)
 //        {
 //            $type = $event->getType();

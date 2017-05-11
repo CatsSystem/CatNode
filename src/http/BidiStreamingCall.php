@@ -25,8 +25,13 @@ class BidiStreamingCall extends Call
 
     public function onReceive($response)
     {
+        var_dump("recv");
         if($response->body){
             $data = substr($response->body, 5);
+//            if(strlen($data) == 57)
+//            {
+//                $data = substr($data, 2);
+//            }
             call_user_func($this->callback, $this->_deserializeResponse($data), $response->statusCode);
         }
     }
