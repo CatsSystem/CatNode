@@ -11,16 +11,12 @@
         "php": ">=5.5",
         "ext-swoole": ">=1.9.9",
         "cat-sys/cat-core": "v0.1.0",
-        "google/protobuf": "^3.3.0",
-        "grpc/grpc": "^1.1.0"
+        "cat-sys/swoole-etcd": "^0.1.0",
+        "hprose/hprose-swoole": "dev-master"
     },
     "autoload": {
         "psr-4": {
             "node\\":"src/"
-        },
-        "classmap": [
-            "src/etcd",
-            "api"
-        ]
+        }
     }
 }

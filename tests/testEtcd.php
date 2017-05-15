@@ -6,52 +6,53 @@
  * Time: 14:48
  */
 
+use etcd\WatchClient;
+use Etcdserverpb\PutRequest;
 use Etcdserverpb\RangeRequest;
-use node\etcd\KVClient;
+use etcd\KVClient;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
 \core\concurrent\Promise::co(function(){
-//    $client = new KVClient('127.0.0.1:2379', []);
-//    $request = new RangeRequest();
-//    $request->setKey("Hello");
-//    list($reply, $status) = yield $client->Range($request)->wait();
-//    if($reply instanceof \Etcdserverpb\RangeResponse)
-//    {
-//        $list = $reply->getKvs();
-//        var_dump($reply->getCount());
-//        foreach ($list as $item)
-//        {
-//            var_dump($item->getValue());
-//        }
-//    }
-//    var_dump("+++++++++++");
-//
-//    //$client = new KVClient('127.0.0.1:2379', []);
-//    $request = new RangeRequest();
-//    $request->setKey("Hello");
-//    list($reply, $status) = yield $client->Range($request)->wait();
-//    if($reply instanceof \Etcdserverpb\RangeResponse)
-//    {
-//        $list = $reply->getKvs();
-//        var_dump($reply->getCount());
-//        foreach ($list as $item)
-//        {
-//            var_dump($item->getValue());
-//        }
-//    }
 
+    $client = new KVClient('127.0.0.1:2379', []);
 
-    $watch_client = new \node\etcd\WatchClient('127.0.0.1:2379', []);
-    //$watch_client = new \node\etcd\WatchClient('172.20.111.172:2379', []);
+    $request = new PutRequest();
+    $request->setKey("Hello");
+    $request->setValue("test");
+    $request->setPrevKv(true);
+    $client->Put($request)->wait(function($result){
+        list($reply, $status) = $result;
+        if($reply instanceof \Etcdserverpb\PutResponse)
+        {
+            $item = $reply->getPrevKv();
+            echo sprintf("update key[%s] success, pre value = %s\n", $item->getKey(), $item->getValue());
+        }
+    });
+
+    $request = new RangeRequest();
+    $request->setKey("Hello");
+    $client->Range($request)->wait(function($result){
+        list($reply, $status) = $result;
+        if($reply instanceof \Etcdserverpb\RangeResponse)
+        {
+            $list = $reply->getKvs();
+            echo sprintf("get %d items \n", $reply->getCount());
+            foreach ($list as $item)
+            {
+                echo sprintf("key[%s] = %s\n", $item->getKey(), $item->getValue());
+            }
+        }
+    });
+
+    $watch_client = new WatchClient('127.0.0.1:2379', []);
     $call = $watch_client->Watch();
-
     $request = new \Etcdserverpb\WatchRequest();
     $create = new \Etcdserverpb\WatchCreateRequest();
     $create->setKey("Hello");
     $request->setCreateRequest($create);
-    $call->setCallback(function(\Etcdserverpb\WatchResponse $response, $status){
+    $call->waiting(function(\Etcdserverpb\WatchResponse $response, $status){
         var_dump($response->getWatchId());
         var_dump($response->getCreated());
         foreach ($response->getEvents() as $event)
@@ -78,5 +79,5 @@ require_once __DIR__ . '/../vendor/autoload.php';
             }
         }
     });
-    $call->write($request);
+    $call->push($request);
 });
